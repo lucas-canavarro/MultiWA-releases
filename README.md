@@ -38,12 +38,37 @@ Primeira vez:
 
 ## Atualizar
 
-Quando sai versão nova, o app avisa. Para atualizar, use um dos dois:
+Desde a versão 2.11.0, o MultiWA se atualiza sozinho. A cada 30 minutos (e quando você entra no Mac), ele procura a última versão publicada. Quando sai versão nova:
+
+- com o MultiWA fechado, ele troca na hora e não abre o app;
+- com o MultiWA aberto, ele espera você ficar 5 minutos sem usar o Mac (teclado, mouse e trackpad) e sem ligação em andamento no MultiWA, fecha o app com calma, troca e abre de novo em segundo plano, sem tirar você do que está fazendo; se a versão nova não abrir, ele volta sozinho para a anterior e não tenta de novo essa versão: espera a próxima.
+
+Contas, sessões e ajustes continuam como estão. Antes da troca, guarda uma cópia da versão atual (para voltar, se precisar) e confere o checksum e a assinatura do pacote, como na instalação. Nunca abre o Terminal nem pergunta nada; o que fez fica registrado em `~/Library/Logs/MultiWA/atualizador.log`.
+
+Para atualizar na hora, sem esperar, use um dos dois:
 
 - no app: Ajustes (⌘,) > Atualizações > "Atualizar agora" (abre o Terminal já rodando o instalador);
 - ou rode de novo o mesmo comando de instalar.
 
-Contas, sessões e ajustes continuam como estão. Antes da troca, o instalador guarda uma cópia da versão atual; se a versão nova não abrir, ele volta sozinho para a anterior.
+Quem está na versão 2.10.1 ou anterior atualiza uma vez por um desses dois caminhos; daí em diante, as versões novas entram sozinhas.
+
+### Desligar ou ligar a atualização automática
+
+Para desligar, rode o mesmo comando de instalar com `--sem-atualizacao-automatica` no fim (as próximas atualizações pelo Terminal ou pelo "Atualizar agora" não a ligam de novo):
+
+```bash
+bash -c 'pasta_do_download="$(mktemp -d "${TMPDIR:-/tmp}/multiwa-instalador.XXXXXX")" || exit 1; instalador_baixado="$pasta_do_download/instalar.sh"; apagar_o_instalador_baixado() { rm -f "$instalador_baixado"; rmdir "$pasta_do_download"; }; trap apagar_o_instalador_baixado EXIT; trap "exit 129" HUP; trap "exit 130" INT; trap "exit 143" TERM; { curl -fsSL https://github.com/lucas-canavarro/MultiWA-releases/releases/latest/download/instalar.sh -o "$instalador_baixado" || gh release download --repo lucas-canavarro/MultiWA-releases --pattern instalar.sh --output - > "$instalador_baixado"; } && [ "$(head -n 1 "$instalador_baixado")" = "#!/usr/bin/env bash" ] || { echo "Erro: não foi possível baixar o instalador do MultiWA (sem internet, GitHub fora do ar ou download vazio). Nada foi instalado; tente de novo mais tarde." >&2; exit 1; }; MULTIWA_INSTALADOR_EM_PASTA_TEMPORARIA=1 bash "$instalador_baixado" "$@"' instalar-multiwa --sem-atualizacao-automatica
+```
+
+Para ligar de novo (ou ligar num Mac que já tem o app), use `--ativar-atualizacao-automatica` no fim. Ele só liga a atualização automática; se já houver versão nova e o MultiWA estiver fechado, a troca acontece logo em seguida:
+
+```bash
+bash -c 'pasta_do_download="$(mktemp -d "${TMPDIR:-/tmp}/multiwa-instalador.XXXXXX")" || exit 1; instalador_baixado="$pasta_do_download/instalar.sh"; apagar_o_instalador_baixado() { rm -f "$instalador_baixado"; rmdir "$pasta_do_download"; }; trap apagar_o_instalador_baixado EXIT; trap "exit 129" HUP; trap "exit 130" INT; trap "exit 143" TERM; { curl -fsSL https://github.com/lucas-canavarro/MultiWA-releases/releases/latest/download/instalar.sh -o "$instalador_baixado" || gh release download --repo lucas-canavarro/MultiWA-releases --pattern instalar.sh --output - > "$instalador_baixado"; } && [ "$(head -n 1 "$instalador_baixado")" = "#!/usr/bin/env bash" ] || { echo "Erro: não foi possível baixar o instalador do MultiWA (sem internet, GitHub fora do ar ou download vazio). Nada foi instalado; tente de novo mais tarde." >&2; exit 1; }; MULTIWA_INSTALADOR_EM_PASTA_TEMPORARIA=1 bash "$instalador_baixado" "$@"' instalar-multiwa --ativar-atualizacao-automatica
+```
+
+O desinstalador também remove a atualização automática.
+
+Se você voltar de versão com `--voltar-versao-anterior`, a atualização automática não reinstala a versão de que você voltou; ela espera a próxima.
 
 ## Voltar à versão anterior
 
